@@ -222,13 +222,15 @@ namespace KeepDisplayOn
 
         private void MainForm_Resize(object sender, EventArgs e)
         {
-            var visible = this.WindowState != FormWindowState.Minimized;
-            this.FormBorderStyle = visible ? FormBorderStyle.FixedSingle : FormBorderStyle.SizableToolWindow;
-            this.ShowInTaskbar = visible;
+            var shouldBeVisible = this.WindowState != FormWindowState.Minimized;
+            this.FormBorderStyle = shouldBeVisible ? FormBorderStyle.FixedSingle : FormBorderStyle.SizableToolWindow;
+            this.ShowInTaskbar = shouldBeVisible;
+            this.Visible = shouldBeVisible;
         }
 
         private void NotifyIconMain_Click(object sender, EventArgs e)
         {
+            this.Visible = true;
             this.WindowState = FormWindowState.Normal;
             Application.DoEvents();
             this.Activate();
