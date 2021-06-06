@@ -16,6 +16,9 @@ namespace KeepDisplayOn
         public MainForm()
         {
             InitializeComponent();
+
+            NotifyIconMain.Icon = ((System.Drawing.Icon)(Properties.Resources.DefaultIcon));
+            this.Icon = ((System.Drawing.Icon)(Properties.Resources.DefaultIcon));
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -54,6 +57,7 @@ namespace KeepDisplayOn
                 _core.InitialPullSystemSettings();
                 _core.PullConnectedDisplayAdapterInfo();
 
+                TimerMaintainer.Interval = _core.GetRecommendedKeepAliveIntervalMilliseconds();
                 TimerMaintainer.Start();
 
                 SetActive();
@@ -67,7 +71,6 @@ namespace KeepDisplayOn
             this.Text = stateMessage;
             this.NotifyIconMain.Text = stateMessage;
         }
-
 
         public void StopDisplayHolding()
         {

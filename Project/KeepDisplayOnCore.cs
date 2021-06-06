@@ -18,9 +18,9 @@ namespace KeepDisplayOn
         public bool m_ScreensaverTimeoutIsRefreshed;
         public DateTime m_ScreensaverTimeoutRefreshedAt;
 
-        public int m_ScreensaverWasActive;
-        public bool m_ScreensaverWasActiveIsRefreshed;
-        public DateTime m_ScreensaverWasActiveRefreshedAt;
+        public uint m_ScreensaverActiveState;
+        public bool m_ScreensaverActiveStateIsRefreshed;
+        public DateTime m_ScreensaverActiveStateRefreshedAt;
 
         public HashSet<string> m_CurrentDisplayAdapterNames;
         public bool m_CurrentDisplayAdapterNamesIsRefreshed;
@@ -42,22 +42,17 @@ namespace KeepDisplayOn
                 m_ScreensaverTimeoutIsRefreshed = getTimeoutCallRet > 0;
             }
 
-            m_ScreensaverWasActiveIsRefreshed = false;
+            m_ScreensaverActiveStateIsRefreshed = false;
             {
-                uint b = 0;
-                m_ScreensaverWasActiveRefreshedAt = DateTime.Now;
-                var getScreenSaverActiveCallRet = ScreenSaverInteractions.SystemParametersInfo(ScreenSaverInteractions.SPI_GETSCREENSAVEACTIVE, 0, ref b, 0);
-                m_ScreensaverWasActiveIsRefreshed = getScreenSaverActiveCallRet > 0;
-                if (m_ScreensaverWasActiveIsRefreshed)
-                {
-                    m_ScreensaverWasActive = (int)b;
-                }
+                m_ScreensaverActiveStateRefreshedAt = DateTime.Now;
+                var getScreenSaverActiveCallRet = ScreenSaverInteractions.SystemParametersInfo(ScreenSaverInteractions.SPI_GETSCREENSAVEACTIVE, 0, ref m_ScreensaverActiveState, 0);
+                m_ScreensaverActiveStateIsRefreshed = getScreenSaverActiveCallRet > 0;
             }
         }
 
         public void DisableScreenSaver()
         {
-            if (m_ScreensaverWasActiveIsRefreshed && m_ScreensaverWasActive > 0)
+            if (m_ScreensaverActiveStateIsRefreshed && m_ScreensaverActiveState != 0)
             {
                 var setScreensaverActiveCallRet = ScreenSaverInteractions.SystemParametersInfo(ScreenSaverInteractions.SPI_SETSCREENSAVEACTIVE, 0, ref uintNULL, 0);
             }
@@ -65,10 +60,24 @@ namespace KeepDisplayOn
 
         public void RestoreSystem()
         {
-            if (m_ScreensaverWasActiveIsRefreshed && m_ScreensaverWasActive > 0)
+            if (m_ScreensaverActiveStateIsRefreshed && m_ScreensaverActiveState != 0)
             {
-                var setScreensaverActiveCallRet = ScreenSaverInteractions.SystemParametersInfo(ScreenSaverInteractions.SPI_SETSCREENSAVEACTIVE, m_ScreensaverWasActive, ref uintNULL, 0);
+                var setScreensaverActiveCallRet = ScreenSaverInteractions.SystemParametersInfo(ScreenSaverInteractions.SPI_SETSCREENSAVEACTIVE, m_ScreensaverActiveState, ref uintNULL, 0);
             }
+        }
+
+        public int GetRecommendedKeepAliveIntervalMilliseconds()
+        {
+            var ret = 30000;
+            if (m_ScreensaverTimeoutIsRefreshed)
+            {
+                ret = (int)m_ScreensaverTimeout * 1000 / 2;
+            }
+            if (ret < 10000)
+            {
+                ret = 10000;
+            }
+            return ret;
         }
 
         public void PullConnectedDisplayAdapterInfo()

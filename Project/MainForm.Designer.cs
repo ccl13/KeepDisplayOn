@@ -30,7 +30,6 @@ namespace KeepDisplayOn
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.TimerMaintainer = new System.Windows.Forms.Timer(this.components);
             this.TimerDisplayDetector = new System.Windows.Forms.Timer(this.components);
             this.ButtonMinimize = new System.Windows.Forms.Button();
@@ -134,7 +133,6 @@ namespace KeepDisplayOn
             // NotifyIconMain
             // 
             this.NotifyIconMain.BalloonTipIcon = System.Windows.Forms.ToolTipIcon.Info;
-            this.NotifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("NotifyIconMain.Icon")));
             this.NotifyIconMain.Text = "KeepDisplayOn";
             this.NotifyIconMain.Visible = true;
             this.NotifyIconMain.Click += new System.EventHandler(this.NotifyIconMain_Click);

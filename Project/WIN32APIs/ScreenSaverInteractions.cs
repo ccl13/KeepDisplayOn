@@ -53,7 +53,7 @@ namespace KeepDisplayOn.WIN32APIs
         /// <param name="fuWinIni"></param>
         /// <returns></returns>
         [DllImport("user32", CharSet = CharSet.Auto)]
-        public static extern long SystemParametersInfo(long uAction, int lpvParam, ref uint uParam, int fuWinIni);
+        public static extern long SystemParametersInfo(uint uAction, uint lpvParam, ref uint uParam, uint fuWinIni);
         /// <summary>
         /// Determines whether a screen reviewer utility is running.
         /// A screen reviewer utility directs textual information to an output device, such as a speech synthesizer or Braille display.
@@ -61,23 +61,23 @@ namespace KeepDisplayOn.WIN32APIs
         /// The pvParam parameter is a pointer to a BOOLvariable that receives TRUE if a screen reviewer utility is running, or FALSE otherwise.
         /// Note  Narrator, the screen reader that is included with Windows, does not set the SPI_SETSCREENREADER or SPI_GETSCREENREADER flags.
         /// </summary>
-        public const long SPI_GETSCREENREADER = 0x0046;
+        public const uint SPI_GETSCREENREADER = 0x0046;
         /// <summary>
         /// Determines whether screen saving is enabled.
         /// The pvParam parameter must point to a BOOL variable that receives TRUE if screen saving is enabled, or FALSE otherwise.
         /// Windows 7, Windows Server 2008 R2 and Windows 2000: The function returns TRUE even when screen saving is not enabled.
         /// For more information and a workaround, see KB318781.
         /// </summary>
-        public const long SPI_GETSCREENSAVEACTIVE = 0x0010;
+        public const uint SPI_GETSCREENSAVEACTIVE = 0x0010;
         /// <summary>
         /// Retrieves the screen saver time-out value, in seconds. The pvParam parameter must point to an integer variable that receives the value.
         /// </summary>
-        public const long SPI_GETSCREENSAVETIMEOUT = 0x000E;
+        public const uint SPI_GETSCREENSAVETIMEOUT = 0x000E;
         /// <summary>
         /// Sets the state of the screen saver. The uiParam parameter specifies TRUE to activate screen saving, or FALSE to deactivate it.
         /// If the machine has entered power saving mode or system lock state, an ERROR_OPERATION_IN_PROGRESS exception occurs.
         /// </summary>
-        public const long SPI_SETSCREENSAVEACTIVE = 0x0011;
+        public const uint SPI_SETSCREENSAVEACTIVE = 0x0011;
         public static bool bScreenReader = true;
 
     }
