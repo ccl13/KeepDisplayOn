@@ -10,7 +10,9 @@ namespace KeepDisplayOn
     public class KeepDisplayOnCore
     {
         public const string RemoteDesktopDisplayAdapterName = "Microsoft Remote Display Adapter";
+
         public static uint uintNULL = 0;
+        public static readonly TimeSpan ApiGuardInterval = TimeSpan.FromSeconds(5);
 
         public static Random RandomAtStart = new Random();
 
@@ -86,7 +88,7 @@ namespace KeepDisplayOn
             if (m_CurrentDisplayAdapterNamesIsRefreshed)
             {
                 var timePassed = DateTime.Now - m_CurrentDisplayAdapterNamesRefreshedAt;
-                if (timePassed < TimeSpan.FromSeconds(5))
+                if (timePassed < ApiGuardInterval)
                 {
                     // If last refresh too close, ignore refresh.
                     return;
@@ -112,36 +114,76 @@ namespace KeepDisplayOn
             return m_CurrentDisplayAdapterNames.Contains(RemoteDesktopDisplayAdapterName);
         }
 
+        public void RunSetAliveWithKeepDisplay()
+        {
+            // Guard
+            if (m_SetRequiredIsSuccessful)
+            {
+                var timePassed = DateTime.Now - m_SetRequiredCalledAt;
+                if (timePassed < ApiGuardInterval)
+                {
+                    return;
+                }
+            }
+            m_SetRequiredIsSuccessful = false;
+            m_SetRequiredCalledAt = DateTime.Now;
+            m_SetRequired = ScreenSaverInteractions.SetThreadExecutionState(ScreenSaverInteractions.ES_DISPLAY_REQUIRED | ScreenSaverInteractions.ES_SYSTEM_REQUIRED);
+            m_SetRequiredIsSuccessful = m_SetRequired != 0;
+        }
+
+        public void RunSetAliveWithoutKeepDisplay()
+        {
+            // Guard
+            if (m_SetRequiredIsSuccessful)
+            {
+                var timePassed = DateTime.Now - m_SetRequiredCalledAt;
+                if (timePassed < ApiGuardInterval)
+                {
+                    return;
+                }
+            }
+            m_SetRequiredIsSuccessful = false;
+            m_SetRequiredCalledAt = DateTime.Now;
+            m_SetRequired = ScreenSaverInteractions.SetThreadExecutionState(ScreenSaverInteractions.ES_SYSTEM_REQUIRED);
+            m_SetRequiredIsSuccessful = m_SetRequired != 0;
+        }
+
         public void KeepAlive(bool keepDisplay, bool mimicInput)
         {
-            m_SetRequiredCalledAt = DateTime.Now;
+            m_SetRequiredIsSuccessful = false;
             if (keepDisplay)
             {
-                m_SetRequired = ScreenSaverInteractions.SetThreadExecutionState(ScreenSaverInteractions.ES_DISPLAY_REQUIRED | ScreenSaverInteractions.ES_SYSTEM_REQUIRED);
+                RunSetAliveWithKeepDisplay();
             }
-            else
+            if (!m_SetRequiredIsSuccessful)
             {
-                m_SetRequired = ScreenSaverInteractions.SetThreadExecutionState(ScreenSaverInteractions.ES_SYSTEM_REQUIRED);
-            }
-            m_SetRequiredIsSuccessful = m_SetRequired != 0;
-
-            var lastIdle = IdleTimeFinder.GetIdleTimeMilliseconds();
-            Debugger.Log(2, "Info", $"Last idle: {lastIdle}\n");
-            if (mimicInput && lastIdle > 10000)
-            {
-                if (m_jiggled)
+                if (keepDisplay)
                 {
-                    Jiggler.Jiggle(-m_lastMovedDistance, -m_lastMovedDistance);
+                    // Reset guard so we won't be ignored
+                    m_SetRequiredCalledAt = DateTime.MinValue;
                 }
-                else
-                {
-                    m_lastMovedDistance = RandomAtStart.Next(1, 4);
-                    Jiggler.Jiggle(m_lastMovedDistance, m_lastMovedDistance);
-                    m_jiggled = !m_jiggled;
-                }
-                //SendKeys.Send("{NUMLOCK}{NUMLOCK}");
+                RunSetAliveWithoutKeepDisplay();
             }
 
+            if (mimicInput)
+            {
+                var lastIdle = IdleTimeFinder.GetIdleTimeMilliseconds();
+                Debugger.Log(2, "Info", $"Last idle: {lastIdle}\n");
+                if (lastIdle > 10000)
+                {
+                    if (m_jiggled)
+                    {
+                        Jiggler.Jiggle(-m_lastMovedDistance, -m_lastMovedDistance);
+                    }
+                    else
+                    {
+                        m_lastMovedDistance = RandomAtStart.Next(1, 4);
+                        Jiggler.Jiggle(m_lastMovedDistance, m_lastMovedDistance);
+                        m_jiggled = !m_jiggled;
+                    }
+                    //SendKeys.Send("{NUMLOCK}{NUMLOCK}");
+                }
+            }
         }
     }
 }

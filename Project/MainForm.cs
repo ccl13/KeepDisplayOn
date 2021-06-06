@@ -34,6 +34,7 @@ namespace KeepDisplayOn
             else
             {
                 StartDisplayHolding();
+                System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.BelowNormal;
             }
         }
 
@@ -58,9 +59,11 @@ namespace KeepDisplayOn
                 _core.PullConnectedDisplayAdapterInfo();
 
                 TimerMaintainer.Interval = _core.GetRecommendedKeepAliveIntervalMilliseconds();
-                TimerMaintainer.Start();
 
                 SetActive();
+
+                TimerMaintainer_Tick(this, null);
+                TimerMaintainer.Start();
             }
         }
 
