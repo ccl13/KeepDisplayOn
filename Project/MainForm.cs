@@ -1,7 +1,4 @@
-﻿using ArkaneSystems.MouseJiggle;
-using KeepDisplayOn.WIN32APIs;
-using System;
-using System.Diagnostics;
+﻿using System;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -11,16 +8,10 @@ namespace KeepDisplayOn
     {
         public static Mutex SingleInstanceMutex = new Mutex(false, "Global\\Carlton's_KeepDisplayOn");
         protected static object LockObject = new object();
-        public static uint uintNULL = 0;
-
-        public uint m_LastThreadExecState;
-        public int m_ScreensaverWasActive;
-        public bool m_ScreensaverActiveOk;
-        public uint m_ScreensaverTimeout;
 
         public bool m_IsDisplayHoldingActive = false;
 
-        public static Random RandomAtStart = new Random();
+        protected KeepDisplayOnCore _core = new KeepDisplayOnCore();
 
         public MainForm()
         {
@@ -60,32 +51,8 @@ namespace KeepDisplayOn
                     return;
                 }
 
-                //--Step 1 set SetThreadExecutionState
-                //--Step 2 Get screensaver information with SystemParametersInfo.
-                //--Step 3 Turn off screen saver with SystemParametersInfo
-                //--Step 4 Timer call every 30 seconds to do step 1 and 3 (minimal time of screen saver is 1 minute, so every 30 seconds will do)
-
-                m_LastThreadExecState = ScreenSaverInteractions.SetThreadExecutionState(ScreenSaverInteractions.ES_DISPLAY_REQUIRED);
-                if (m_LastThreadExecState == 0U)
-                {
-                    MessageBox.Show("Error setting display required.\r\nClosing application.", "Keep Display On", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    this.Close();
-                }
-                if (ScreenSaverInteractions.SystemParametersInfo(ScreenSaverInteractions.SPI_GETSCREENSAVETIMEOUT, 0, ref m_ScreensaverTimeout, 0) > 0)
-                {
-                }
-                uint b = 0;
-                if (ScreenSaverInteractions.SystemParametersInfo(ScreenSaverInteractions.SPI_GETSCREENSAVEACTIVE, 0, ref b, 0) > 0)
-                {
-                    m_ScreensaverWasActive = (int)b;
-                    m_ScreensaverActiveOk = true;
-                }
-                else
-                {
-                    m_ScreensaverWasActive = 0;
-                    m_ScreensaverActiveOk = false;
-                }
-                ScreenSaverInteractions.SystemParametersInfo(ScreenSaverInteractions.SPI_SETSCREENSAVEACTIVE, 0, ref uintNULL, 0);
+                _core.InitialPullSystemSettings();
+                _core.PullConnectedDisplayAdapterInfo();
 
                 TimerMaintainer.Start();
 
@@ -112,14 +79,6 @@ namespace KeepDisplayOn
                 }
 
                 TimerMaintainer.Stop();
-                if (m_LastThreadExecState != 0)
-                {
-                    ScreenSaverInteractions.SetThreadExecutionState(m_LastThreadExecState);
-                }
-                if (m_ScreensaverActiveOk)
-                {
-                    ScreenSaverInteractions.SystemParametersInfo(ScreenSaverInteractions.SPI_SETSCREENSAVEACTIVE, m_ScreensaverWasActive, ref uintNULL, 0);
-                }
 
                 SetInactive();
             }
@@ -131,9 +90,6 @@ namespace KeepDisplayOn
             SingleInstanceMutex?.ReleaseMutex();
         }
 
-
-        protected bool _jiggled = false;
-        protected int _lastMoved = 1;
         private void TimerMaintainer_Tick(object sender, EventArgs e)
         {
             if (!m_IsDisplayHoldingActive)
@@ -141,31 +97,7 @@ namespace KeepDisplayOn
                 return;
             }
 
-            if (CheckBoxWakeScreen.Checked)
-            {
-                ScreenSaverInteractions.SetThreadExecutionState(ScreenSaverInteractions.ES_DISPLAY_REQUIRED | ScreenSaverInteractions.ES_SYSTEM_REQUIRED);
-            }
-            else
-            {
-                ScreenSaverInteractions.SetThreadExecutionState(ScreenSaverInteractions.ES_SYSTEM_REQUIRED);
-            }
-
-            var lastIdle = IdleTimeFinder.GetIdleTimeMilliseconds();
-            Debugger.Log(2, "Info", $"Last idle: {lastIdle}\n");
-            if (CheckBoxAggressive.Checked && lastIdle > 10000)
-            {
-                if (_jiggled)
-                {
-                    Jiggler.Jiggle(-_lastMoved, -_lastMoved);
-                }
-                else
-                {
-                    _lastMoved = RandomAtStart.Next(1, 4);
-                    Jiggler.Jiggle(_lastMoved, _lastMoved);
-                    _jiggled = !_jiggled;
-                }
-                //SendKeys.Send("{NUMLOCK}{NUMLOCK}");
-            }
+            _core.KeepAlive(CheckBoxWakeScreen.Checked, CheckBoxAggressive.Checked);
 
             Application.DoEvents();
         }
@@ -174,8 +106,8 @@ namespace KeepDisplayOn
         {
             try
             {
-                var displayAdapterNames = WMI.GetActiveDisplayAdapterNames();
-                var isInRDP = displayAdapterNames.Contains("Microsoft Remote Display Adapter");
+                _core.PullConnectedDisplayAdapterInfo();
+                var isInRDP = _core.IsInRemoteSession();
                 if (isInRDP != m_IsDisplayHoldingActive)
                 {
                     if (isInRDP)
