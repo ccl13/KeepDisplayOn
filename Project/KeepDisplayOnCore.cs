@@ -73,6 +73,17 @@ namespace KeepDisplayOn
 
         public void PullConnectedDisplayAdapterInfo()
         {
+            // WMI Pull Guard
+            if (m_CurrentDisplayAdapterNamesIsRefreshed)
+            {
+                var timePassed = DateTime.Now - m_CurrentDisplayAdapterNamesRefreshedAt;
+                if (timePassed < TimeSpan.FromSeconds(5))
+                {
+                    // If last refresh too close, ignore refresh.
+                    return;
+                }
+            }
+            // Actual refresh
             m_CurrentDisplayAdapterNamesIsRefreshed = false;
             try
             {
