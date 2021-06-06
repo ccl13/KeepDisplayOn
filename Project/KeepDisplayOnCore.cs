@@ -79,7 +79,8 @@ namespace KeepDisplayOn
             {
                 ret = 10000;
             }
-            return ret;
+            // TODO: Currently just force this to debug
+            return 30000;
         }
 
         public void PullConnectedDisplayAdapterInfo()
