@@ -18,24 +18,27 @@ namespace KeepDisplayOn
 
         public uint m_ScreensaverTimeout;
         public bool m_ScreensaverTimeoutIsRefreshed;
-        public DateTime m_ScreensaverTimeoutRefreshedAt;
+        public DateTime m_ScreensaverTimeoutRefreshedAt = DateTime.MinValue;
 
         public uint m_ScreensaverActiveState;
         public bool m_ScreensaverActiveStateIsRefreshed;
-        public DateTime m_ScreensaverActiveStateRefreshedAt;
+        public DateTime m_ScreensaverActiveStateRefreshedAt = DateTime.MinValue;
 
         public HashSet<string> m_CurrentDisplayAdapterNames;
         public bool m_CurrentDisplayAdapterNamesIsRefreshed;
-        public DateTime m_CurrentDisplayAdapterNamesRefreshedAt;
+        public DateTime m_CurrentDisplayAdapterNamesRefreshedAt = DateTime.MinValue;
+
+        public bool m_ShouldSetScreenSaverOnEnd = false;
+        public DateTime m_ShouldSetScreenSaverOnEndRefreshedAt = DateTime.MinValue;
 
         public uint m_SetRequired;
         public bool m_SetRequiredIsSuccessful;
-        public DateTime m_SetRequiredCalledAt;
+        public DateTime m_SetRequiredCalledAt = DateTime.MinValue;
 
-        protected bool m_jiggled = false;
-        protected int m_lastMovedDistance = 1;
+        protected bool m_Jiggled = false;
+        protected int m_LastJiggleMovedDistance = 1;
 
-        public void InitialPullSystemSettings()
+        public void PullSystemSettings()
         {
             m_ScreensaverTimeoutIsRefreshed = false;
             {
@@ -52,6 +55,16 @@ namespace KeepDisplayOn
             }
         }
 
+        public void InvestigateScreenSaverSetting()
+        {
+            PullSystemSettings();
+            if (m_ScreensaverActiveStateIsRefreshed)
+            {
+                m_ShouldSetScreenSaverOnEndRefreshedAt = DateTime.Now;
+                m_ShouldSetScreenSaverOnEnd = m_ScreensaverActiveState > 0;
+            }
+        }
+
         public void DisableScreenSaver()
         {
             if (m_ScreensaverActiveStateIsRefreshed && m_ScreensaverActiveState != 0)
@@ -62,7 +75,7 @@ namespace KeepDisplayOn
 
         public void RestoreSystem()
         {
-            if (m_ScreensaverActiveStateIsRefreshed && m_ScreensaverActiveState != 0)
+            if (m_ScreensaverActiveStateIsRefreshed && m_ShouldSetScreenSaverOnEnd)
             {
                 var setScreensaverActiveCallRet = ScreenSaverInteractions.SystemParametersInfo(ScreenSaverInteractions.SPI_SETSCREENSAVEACTIVE, m_ScreensaverActiveState, ref uintNULL, 0);
             }
@@ -79,8 +92,11 @@ namespace KeepDisplayOn
             {
                 ret = 10000;
             }
-            // TODO: Currently just force this to debug
-            return 30000;
+            if (ret > 60000)
+            {
+                ret = 60000;
+            }
+            return ret;
         }
 
         public void PullConnectedDisplayAdapterInfo()
@@ -172,15 +188,15 @@ namespace KeepDisplayOn
                 Debugger.Log(2, "Info", $"Last idle: {lastIdle}\n");
                 if (lastIdle > 10000)
                 {
-                    if (m_jiggled)
+                    if (m_Jiggled)
                     {
-                        Jiggler.Jiggle(-m_lastMovedDistance, -m_lastMovedDistance);
+                        Jiggler.Jiggle(-m_LastJiggleMovedDistance, -m_LastJiggleMovedDistance);
                     }
                     else
                     {
-                        m_lastMovedDistance = RandomAtStart.Next(1, 4);
-                        Jiggler.Jiggle(m_lastMovedDistance, m_lastMovedDistance);
-                        m_jiggled = !m_jiggled;
+                        m_LastJiggleMovedDistance = RandomAtStart.Next(1, 4);
+                        Jiggler.Jiggle(m_LastJiggleMovedDistance, m_LastJiggleMovedDistance);
+                        m_Jiggled = !m_Jiggled;
                     }
                     //SendKeys.Send("{NUMLOCK}{NUMLOCK}");
                 }

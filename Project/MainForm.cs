@@ -55,7 +55,7 @@ namespace KeepDisplayOn
                     return;
                 }
 
-                _core.InitialPullSystemSettings();
+                _core.InvestigateScreenSaverSetting();
                 _core.PullConnectedDisplayAdapterInfo();
 
                 TimerMaintainer.Interval = _core.GetRecommendedKeepAliveIntervalMilliseconds();
@@ -64,6 +64,8 @@ namespace KeepDisplayOn
 
                 TimerMaintainer_Tick(this, null);
                 TimerMaintainer.Start();
+
+                _core.DisableScreenSaver();
             }
         }
 
@@ -87,6 +89,8 @@ namespace KeepDisplayOn
                 TimerMaintainer.Stop();
 
                 SetInactive();
+
+                _core.RestoreSystem();
             }
         }
 
