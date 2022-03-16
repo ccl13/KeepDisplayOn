@@ -3,7 +3,6 @@ using KeepDisplayOn.WIN32APIs;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 
 namespace KeepDisplayOn
 {
@@ -16,17 +15,17 @@ namespace KeepDisplayOn
 
         public static Random RandomAtStart = new Random();
 
-        public uint m_ScreensaverTimeout;
-        public bool m_ScreensaverTimeoutIsRefreshed;
-        public DateTime m_ScreensaverTimeoutRefreshedAt = DateTime.MinValue;
+        public uint m_LastPulledScreensaverTimeout;
+        public bool m_LastPulledScreensaverTimeoutIsRefreshed;
+        public DateTime m_LastPulledScreensaverTimeoutRefreshedAt = DateTime.MinValue;
 
-        public uint m_ScreensaverActiveState;
-        public bool m_ScreensaverActiveStateIsRefreshed;
-        public DateTime m_ScreensaverActiveStateRefreshedAt = DateTime.MinValue;
+        public uint m_LastPulledScreensaverActiveState;
+        public bool m_LastPulledScreensaverActiveStateIsRefreshed;
+        public DateTime m_LastPulledScreensaverActiveStateRefreshedAt = DateTime.MinValue;
 
-        public HashSet<string> m_CurrentDisplayAdapterNames;
-        public bool m_CurrentDisplayAdapterNamesIsRefreshed;
-        public DateTime m_CurrentDisplayAdapterNamesRefreshedAt = DateTime.MinValue;
+        public HashSet<string> m_LastPulledDisplayAdapterNames;
+        public bool m_LastPulledDisplayAdapterNamesIsRefreshed;
+        public DateTime m_LastPulledDisplayAdapterNamesRefreshedAt = DateTime.MinValue;
 
         public bool m_ShouldSetScreenSaverOnEnd = false;
         public DateTime m_ShouldSetScreenSaverOnEndRefreshedAt = DateTime.MinValue;
@@ -40,34 +39,34 @@ namespace KeepDisplayOn
 
         public void PullSystemSettings()
         {
-            m_ScreensaverTimeoutIsRefreshed = false;
+            m_LastPulledScreensaverTimeoutIsRefreshed = false;
             {
-                m_ScreensaverTimeoutRefreshedAt = DateTime.Now;
-                var getTimeoutCallRet = ScreenSaverInteractions.SystemParametersInfo(ScreenSaverInteractions.SPI_GETSCREENSAVETIMEOUT, 0, ref m_ScreensaverTimeout, 0);
-                m_ScreensaverTimeoutIsRefreshed = getTimeoutCallRet > 0;
+                m_LastPulledScreensaverTimeoutRefreshedAt = DateTime.Now;
+                var getTimeoutCallRet = ScreenSaverInteractions.SystemParametersInfo(ScreenSaverInteractions.SPI_GETSCREENSAVETIMEOUT, 0, ref m_LastPulledScreensaverTimeout, 0);
+                m_LastPulledScreensaverTimeoutIsRefreshed = getTimeoutCallRet > 0;
             }
 
-            m_ScreensaverActiveStateIsRefreshed = false;
+            m_LastPulledScreensaverActiveStateIsRefreshed = false;
             {
-                m_ScreensaverActiveStateRefreshedAt = DateTime.Now;
-                var getScreenSaverActiveCallRet = ScreenSaverInteractions.SystemParametersInfo(ScreenSaverInteractions.SPI_GETSCREENSAVEACTIVE, 0, ref m_ScreensaverActiveState, 0);
-                m_ScreensaverActiveStateIsRefreshed = getScreenSaverActiveCallRet > 0;
+                m_LastPulledScreensaverActiveStateRefreshedAt = DateTime.Now;
+                var getScreenSaverActiveCallRet = ScreenSaverInteractions.SystemParametersInfo(ScreenSaverInteractions.SPI_GETSCREENSAVEACTIVE, 0, ref m_LastPulledScreensaverActiveState, 0);
+                m_LastPulledScreensaverActiveStateIsRefreshed = getScreenSaverActiveCallRet > 0;
             }
         }
 
-        public void InvestigateScreenSaverSetting()
+        public void Initialize()
         {
             PullSystemSettings();
-            if (m_ScreensaverActiveStateIsRefreshed)
+            if (m_LastPulledScreensaverActiveStateIsRefreshed)
             {
                 m_ShouldSetScreenSaverOnEndRefreshedAt = DateTime.Now;
-                m_ShouldSetScreenSaverOnEnd = m_ScreensaverActiveState > 0;
+                m_ShouldSetScreenSaverOnEnd = m_LastPulledScreensaverActiveState != 0;
             }
         }
 
         public void DisableScreenSaver()
         {
-            if (m_ScreensaverActiveStateIsRefreshed && m_ScreensaverActiveState != 0)
+            if (m_LastPulledScreensaverActiveStateIsRefreshed && m_LastPulledScreensaverActiveState != 0)
             {
                 var setScreensaverActiveCallRet = ScreenSaverInteractions.SystemParametersInfo(ScreenSaverInteractions.SPI_SETSCREENSAVEACTIVE, 0, ref uintNULL, 0);
             }
@@ -75,18 +74,18 @@ namespace KeepDisplayOn
 
         public void RestoreSystem()
         {
-            if (m_ScreensaverActiveStateIsRefreshed && m_ShouldSetScreenSaverOnEnd)
+            if (m_LastPulledScreensaverActiveStateIsRefreshed && m_ShouldSetScreenSaverOnEnd)
             {
-                var setScreensaverActiveCallRet = ScreenSaverInteractions.SystemParametersInfo(ScreenSaverInteractions.SPI_SETSCREENSAVEACTIVE, m_ScreensaverActiveState, ref uintNULL, 0);
+                var setScreensaverActiveCallRet = ScreenSaverInteractions.SystemParametersInfo(ScreenSaverInteractions.SPI_SETSCREENSAVEACTIVE, m_LastPulledScreensaverActiveState, ref uintNULL, 0);
             }
         }
 
         public int GetRecommendedKeepAliveIntervalMilliseconds()
         {
             var ret = 30000;
-            if (m_ScreensaverTimeoutIsRefreshed)
+            if (m_LastPulledScreensaverTimeoutIsRefreshed)
             {
-                ret = (int)m_ScreensaverTimeout * 1000 / 2;
+                ret = (int)m_LastPulledScreensaverTimeout * 1000 / 2;
             }
             if (ret < 10000)
             {
@@ -102,9 +101,9 @@ namespace KeepDisplayOn
         public void PullConnectedDisplayAdapterInfo()
         {
             // WMI Pull Guard
-            if (m_CurrentDisplayAdapterNamesIsRefreshed)
+            if (m_LastPulledDisplayAdapterNamesIsRefreshed)
             {
-                var timePassed = DateTime.Now - m_CurrentDisplayAdapterNamesRefreshedAt;
+                var timePassed = DateTime.Now - m_LastPulledDisplayAdapterNamesRefreshedAt;
                 if (timePassed < ApiGuardInterval)
                 {
                     // If last refresh too close, ignore refresh.
@@ -112,13 +111,13 @@ namespace KeepDisplayOn
                 }
             }
             // Actual refresh
-            m_CurrentDisplayAdapterNamesIsRefreshed = false;
+            m_LastPulledDisplayAdapterNamesIsRefreshed = false;
             try
             {
-                m_CurrentDisplayAdapterNamesRefreshedAt = DateTime.Now;
+                m_LastPulledDisplayAdapterNamesRefreshedAt = DateTime.Now;
                 var displayAdapterNames = WMI.GetActiveDisplayAdapterNames();
-                m_CurrentDisplayAdapterNames = new HashSet<string>(displayAdapterNames, StringComparer.InvariantCultureIgnoreCase);
-                m_CurrentDisplayAdapterNamesIsRefreshed = true;
+                m_LastPulledDisplayAdapterNames = new HashSet<string>(displayAdapterNames, StringComparer.InvariantCultureIgnoreCase);
+                m_LastPulledDisplayAdapterNamesIsRefreshed = true;
             }
             catch (Exception ex)
             {
@@ -128,7 +127,7 @@ namespace KeepDisplayOn
 
         public bool IsInRemoteSession()
         {
-            return m_CurrentDisplayAdapterNames.Contains(RemoteDesktopDisplayAdapterName);
+            return m_LastPulledDisplayAdapterNames.Contains(RemoteDesktopDisplayAdapterName);
         }
 
         public void RunSetAliveWithKeepDisplay()
@@ -165,23 +164,32 @@ namespace KeepDisplayOn
             m_SetRequiredIsSuccessful = m_SetRequired != 0;
         }
 
-        public void KeepAlive(bool keepDisplay, bool mimicInput)
+        public void KeepDisplayOn(bool keepScreenWake, bool mimicInput)
         {
             m_SetRequiredIsSuccessful = false;
-            if (keepDisplay)
+            // Maintain internal assumption
+            if (m_LastPulledScreensaverActiveStateIsRefreshed && DateTime.Now - m_LastPulledScreensaverActiveStateRefreshedAt > TimeSpan.FromMinutes(2))
+            {
+                PullSystemSettings();
+                if (m_ShouldSetScreenSaverOnEnd == (m_LastPulledScreensaverActiveState != 0))
+                {
+                    DisableScreenSaver();
+                }
+            }
+            // Keep Display On
+            if (keepScreenWake)
             {
                 RunSetAliveWithKeepDisplay();
             }
             if (!m_SetRequiredIsSuccessful)
             {
-                if (keepDisplay)
+                if (keepScreenWake)
                 {
                     // Reset guard so we won't be ignored
                     m_SetRequiredCalledAt = DateTime.MinValue;
                 }
                 RunSetAliveWithoutKeepDisplay();
             }
-
             if (mimicInput)
             {
                 var lastIdle = IdleTimeFinder.GetIdleTimeMilliseconds();

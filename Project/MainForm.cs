@@ -10,6 +10,7 @@ namespace KeepDisplayOn
         protected static object LockObject = new object();
 
         public bool m_IsDisplayHoldingActive = false;
+        public DateTime m_IsDisplayHoldingLastChecked = DateTime.MinValue;
 
         protected KeepDisplayOnCore _core = new KeepDisplayOnCore();
 
@@ -17,8 +18,8 @@ namespace KeepDisplayOn
         {
             InitializeComponent();
 
-            NotifyIconMain.Icon = ((System.Drawing.Icon)(Properties.Resources.DefaultIcon));
-            this.Icon = ((System.Drawing.Icon)(Properties.Resources.DefaultIcon));
+            NotifyIconMain.Icon = Properties.Resources.DefaultIcon;
+            this.Icon = Properties.Resources.DefaultIcon;
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -33,7 +34,15 @@ namespace KeepDisplayOn
             }
             else
             {
-                StartDisplayHolding();
+                SetInactive();
+                if (CheckBoxOnlyInRDP.Checked)
+                {
+                    CheckBoxOnlyInRDP_CheckedChanged(sender, e);
+                }
+                else
+                {
+                    StartDisplayHolding();
+                }
                 System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.BelowNormal;
             }
         }
@@ -55,7 +64,7 @@ namespace KeepDisplayOn
                     return;
                 }
 
-                _core.InvestigateScreenSaverSetting();
+                _core.Initialize();
                 _core.PullConnectedDisplayAdapterInfo();
 
                 TimerMaintainer.Interval = _core.GetRecommendedKeepAliveIntervalMilliseconds();
@@ -107,7 +116,7 @@ namespace KeepDisplayOn
                 return;
             }
 
-            _core.KeepAlive(CheckBoxWakeScreen.Checked, CheckBoxAggressive.Checked);
+            _core.KeepDisplayOn(CheckBoxWakeScreen.Checked, CheckBoxAggressive.Checked);
 
             Application.DoEvents();
         }

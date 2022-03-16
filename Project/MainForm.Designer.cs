@@ -68,6 +68,8 @@ namespace KeepDisplayOn
             // CheckBoxOnlyInRDP
             // 
             this.CheckBoxOnlyInRDP.AutoSize = true;
+            this.CheckBoxOnlyInRDP.Checked = true;
+            this.CheckBoxOnlyInRDP.CheckState = System.Windows.Forms.CheckState.Checked;
             this.CheckBoxOnlyInRDP.Dock = System.Windows.Forms.DockStyle.Top;
             this.CheckBoxOnlyInRDP.Location = new System.Drawing.Point(2, 2);
             this.CheckBoxOnlyInRDP.Margin = new System.Windows.Forms.Padding(10);
