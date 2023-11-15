@@ -65,7 +65,7 @@ namespace KeepDisplayOn
                 }
 
                 _core.Initialize();
-                _core.PullConnectedDisplayAdapterInfo();
+                _core.RefreshRemoteSessionStatus();
 
                 TimerMaintainer.Interval = _core.GetRecommendedKeepAliveIntervalMilliseconds();
 
@@ -125,7 +125,7 @@ namespace KeepDisplayOn
         {
             try
             {
-                _core.PullConnectedDisplayAdapterInfo();
+                _core.RefreshRemoteSessionStatus();
                 var isInRDP = _core.IsInRemoteSession();
                 if (isInRDP != m_IsDisplayHoldingActive)
                 {

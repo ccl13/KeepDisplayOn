@@ -37,6 +37,13 @@ namespace KeepDisplayOn
         protected bool m_Jiggled = false;
         protected int m_LastJiggleMovedDistance = 1;
 
+        protected bool m_LastRemoteSessionIndicator = false;
+        public DateTime m_LastRemoteSessionIndicatorRefreshedAt = DateTime.MinValue;
+
+        const int MaxKeepAliveInternal = 60000;
+        const int MinKeepAliveInternal = 10000;
+        const int DefaultKeepAliveInternal = 30000;
+
         public void PullSystemSettings()
         {
             m_LastPulledScreensaverTimeoutIsRefreshed = false;
@@ -82,20 +89,37 @@ namespace KeepDisplayOn
 
         public int GetRecommendedKeepAliveIntervalMilliseconds()
         {
-            var ret = 30000;
+            var ret = DefaultKeepAliveInternal;
             if (m_LastPulledScreensaverTimeoutIsRefreshed)
             {
                 ret = (int)m_LastPulledScreensaverTimeout * 1000 / 2;
             }
-            if (ret < 10000)
+            if (ret < MinKeepAliveInternal)
             {
-                ret = 10000;
+                ret = MinKeepAliveInternal;
             }
-            if (ret > 60000)
+            if (ret > MaxKeepAliveInternal)
             {
-                ret = 60000;
+                ret = MaxKeepAliveInternal;
             }
             return ret;
+        }
+
+        public void RefreshRemoteSessionStatus()
+        {
+            PullRemoteSessionInfoStandard();
+            //PullConnectedDisplayAdapterInfo();
+        }
+
+        public void PullRemoteSessionInfoStandard()
+        {
+            TimeSpan timePassed = DateTime.Now - m_LastRemoteSessionIndicatorRefreshedAt;
+            if (timePassed < ApiGuardInterval)
+            {
+                return;
+            }
+            m_LastRemoteSessionIndicator = RemoteDesktopDetector.IsCurrentSessionRemote();
+            m_LastRemoteSessionIndicatorRefreshedAt = DateTime.Now;
         }
 
         public void PullConnectedDisplayAdapterInfo()
@@ -127,7 +151,8 @@ namespace KeepDisplayOn
 
         public bool IsInRemoteSession()
         {
-            return m_LastPulledDisplayAdapterNames.Contains(RemoteDesktopDisplayAdapterName);
+            return m_LastRemoteSessionIndicator;
+            //return m_LastPulledDisplayAdapterNames.Contains(RemoteDesktopDisplayAdapterName);
         }
 
         public void RunSetAliveWithKeepDisplay()
