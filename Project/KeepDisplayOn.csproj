@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net8.0-windows7.0</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <Prefer32Bit>true</Prefer32Bit>
     <SignAssembly>true</SignAssembly>
@@ -11,6 +11,7 @@
     <StartupObject>KeepDisplayOn.Program</StartupObject>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x86</Platforms>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
