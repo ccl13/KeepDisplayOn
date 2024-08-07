@@ -1,5 +1,7 @@
 ﻿using ArkaneSystems.MouseJiggle;
+
 using KeepDisplayOn.WIN32APIs;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,10 +12,10 @@ namespace KeepDisplayOn
     {
         public const string RemoteDesktopDisplayAdapterName = "Microsoft Remote Display Adapter";
 
-        public static uint uintNULL = 0;
+        private static uint uintNULL = 0;
         public static readonly TimeSpan ApiGuardInterval = TimeSpan.FromSeconds(5);
 
-        public static Random RandomAtStart = new Random();
+        public static readonly Random RandomAtStart = new Random();
 
         public uint m_LastPulledScreensaverTimeout;
         public bool m_LastPulledScreensaverTimeoutIsRefreshed;

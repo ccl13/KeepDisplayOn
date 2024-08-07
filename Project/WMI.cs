@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Management;
-using System.Text;
 
 namespace KeepDisplayOn
 {
     public static class WMI
     {
-        public static ManagementScope DefaultScope = new ManagementScope("root\\CIMV2");
-        private static SelectQuery QueryVideoController = new SelectQuery("Win32_VideoController");
-        private static EnumerationOptions QueryVideoControllerOptions = new EnumerationOptions(
+        public static readonly ManagementScope DefaultScope = new ManagementScope("root\\CIMV2");
+        private static readonly SelectQuery QueryVideoController = new SelectQuery("Win32_VideoController");
+        private static readonly EnumerationOptions QueryVideoControllerOptions = new EnumerationOptions(
             context: null,
             timeout: TimeSpan.FromSeconds(5),
             blockSize: 1,
@@ -24,7 +23,7 @@ namespace KeepDisplayOn
         public static List<string> GetActiveDisplayAdapterNames()
         {
             var output = new List<string>();
-            using (ManagementObjectSearcher searcher = new ManagementObjectSearcher(DefaultScope, QueryVideoController, QueryVideoControllerOptions))
+            using (ManagementObjectSearcher searcher = new(DefaultScope, QueryVideoController, QueryVideoControllerOptions))
             using (var moCollection = searcher.Get())
             {
                 foreach (ManagementObject mo in moCollection)
@@ -37,7 +36,7 @@ namespace KeepDisplayOn
                         {
                             if (currentBitsPerPixel.Value != null && description.Value is string)
                             {
-                                output.Add(description.Value as string);
+                                output.Add((string)description.Value);
                             }
                         }
                     }

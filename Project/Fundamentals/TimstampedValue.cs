@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace KeepDisplayOn.Fundamentals
 {
@@ -8,13 +6,13 @@ namespace KeepDisplayOn.Fundamentals
     {
         // TODO: Add unit test
 
-        public T Value { get; protected set; }
+        public T? Value { get; protected set; }
 
         public DateTimeOffset Timestamp { get; protected set; }
 
         public TimeSpan ValidInterval { get; set; } = TimeSpan.FromMinutes(10);
 
-        public bool Invalidated { get; set; } = false;
+        public bool Invalidated { get; set; }
 
         public bool IsValid => !Invalidated && (DateTimeOffset.UtcNow - Timestamp) < ValidInterval;
 
@@ -36,8 +34,8 @@ namespace KeepDisplayOn.Fundamentals
             return Timestamp;
         }
 
-        public static implicit operator T(TimstampedValue<T> v) => v.Value;
-        public static explicit operator TimstampedValue<T>(T v) => new TimstampedValue<T>(v);
+        public static implicit operator T?(TimstampedValue<T> v) => v;
+        public static explicit operator TimstampedValue<T>(T v) => new(v);
 
     }
 }

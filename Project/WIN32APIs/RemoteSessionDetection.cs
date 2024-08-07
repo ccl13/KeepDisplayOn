@@ -1,6 +1,7 @@
 ﻿namespace KeepDisplayOn.WIN32APIs
 {
     using Microsoft.Win32;
+
     using System;
     using System.Runtime.InteropServices;
 
@@ -32,7 +33,7 @@
 
             bool isRemoteable = false;
 
-            RegistryKey regKey = null;
+            RegistryKey? regKey = null;
 
             try
             {
@@ -42,7 +43,7 @@
                     return isRemoteable;
                 }
 
-                object value = regKey.GetValue(GLASS_SESSION_ID);
+                object? value = regKey.GetValue(GLASS_SESSION_ID);
                 if (value == null || !(value is int glassSessionId))
                 {
                     return isRemoteable;

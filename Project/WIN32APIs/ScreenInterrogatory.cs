@@ -312,7 +312,7 @@ namespace KeepDisplayOn.WIN32APIs
             }
         }
 
-        public static string GetDeviceFriendlyName(this Screen screen)
+        public static string? GetDeviceFriendlyName(this Screen screen)
         {
             var allFriendlyNames = GetAllMonitorsFriendlyNames();
             for (var index = 0; index < Screen.AllScreens.Length; index++)
