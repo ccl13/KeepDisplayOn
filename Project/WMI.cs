@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Management;
+using System.Diagnostics;
 
 namespace KeepDisplayOn
 {
@@ -23,25 +24,52 @@ namespace KeepDisplayOn
         public static List<string> GetActiveDisplayAdapterNames()
         {
             var output = new List<string>();
-            using (ManagementObjectSearcher searcher = new(DefaultScope, QueryVideoController, QueryVideoControllerOptions))
-            using (var moCollection = searcher.Get())
+
+            try
             {
-                foreach (ManagementObject mo in moCollection)
+                // Connect to WMI before creating searcher
+                if (!DefaultScope.IsConnected)
                 {
-                    using (mo)
+                    DefaultScope.Connect();
+                }
+
+                using var searcher = new ManagementObjectSearcher(DefaultScope, QueryVideoController, QueryVideoControllerOptions);
+                using var collection = searcher.Get();
+
+                foreach (ManagementBaseObject obj in collection)
+                {
+                    // Ensure proper disposal of each ManagementBaseObject
+                    using var mo = (ManagementObject)obj;
+                    try
                     {
-                        PropertyData currentBitsPerPixel = mo.Properties["CurrentBitsPerPixel"];
-                        PropertyData description = mo.Properties["Description"];
+                        var currentBitsPerPixel = mo.GetPropertyValue("CurrentBitsPerPixel");
+                        var description = mo.GetPropertyValue("Description");
+
                         if (currentBitsPerPixel != null && description != null)
                         {
-                            if (currentBitsPerPixel.Value != null && description.Value is string)
-                            {
-                                output.Add((string)description.Value);
-                            }
+                            output.Add(description.ToString());
                         }
+                    }
+                    catch (ManagementException ex)
+                    {
+                        // Log property access error but continue processing
+                        Debug.WriteLine($"Error accessing WMI property: {ex.Message}");
                     }
                 }
             }
+            catch (ManagementException ex)
+            {
+                // Log WMI access error
+                Debug.WriteLine($"WMI Error: {ex.Message}");
+                throw; // Rethrow if you want calling code to handle it
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                // Handle access permission issues
+                Debug.WriteLine($"Access denied to WMI: {ex.Message}");
+                throw;
+            }
+
             return output;
         }
     }
