@@ -1,5 +1,4 @@
-﻿
-namespace KeepDisplayOn
+﻿namespace KeepDisplayOn
 {
     partial class MainForm
     {
@@ -29,141 +28,157 @@ namespace KeepDisplayOn
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.TimerMaintainer = new System.Windows.Forms.Timer(this.components);
-            this.TimerDisplayDetector = new System.Windows.Forms.Timer(this.components);
-            this.ButtonMinimize = new System.Windows.Forms.Button();
-            this.CheckBoxOnlyInRDP = new System.Windows.Forms.CheckBox();
-            this.CheckBoxWakeScreen = new System.Windows.Forms.CheckBox();
-            this.SplitMain = new System.Windows.Forms.SplitContainer();
-            this.CheckBoxAggressive = new System.Windows.Forms.CheckBox();
-            this.NotifyIconMain = new System.Windows.Forms.NotifyIcon(this.components);
-            ((System.ComponentModel.ISupportInitialize)(this.SplitMain)).BeginInit();
-            this.SplitMain.Panel1.SuspendLayout();
-            this.SplitMain.Panel2.SuspendLayout();
-            this.SplitMain.SuspendLayout();
-            this.SuspendLayout();
+            components = new System.ComponentModel.Container();
+            TimerMaintainer = new System.Windows.Forms.Timer(components);
+            TimerDisplayDetector = new System.Windows.Forms.Timer(components);
+            ButtonMinimize = new System.Windows.Forms.Button();
+            CheckBoxOnlyInRDP = new System.Windows.Forms.CheckBox();
+            CheckBoxWakeScreen = new System.Windows.Forms.CheckBox();
+            SplitMain = new System.Windows.Forms.SplitContainer();
+            CheckBoxAggressive = new System.Windows.Forms.CheckBox();
+            CheckBoxPowerOverlay = new System.Windows.Forms.CheckBox();
+            NotifyIconMain = new System.Windows.Forms.NotifyIcon(components);
+            ((System.ComponentModel.ISupportInitialize)SplitMain).BeginInit();
+            SplitMain.Panel1.SuspendLayout();
+            SplitMain.Panel2.SuspendLayout();
+            SplitMain.SuspendLayout();
+            SuspendLayout();
             // 
             // TimerMaintainer
             // 
-            this.TimerMaintainer.Interval = 30000;
-            this.TimerMaintainer.Tick += new System.EventHandler(this.TimerMaintainer_Tick);
+            TimerMaintainer.Interval = 30000;
+            TimerMaintainer.Tick += TimerMaintainer_Tick;
             // 
             // TimerDisplayDetector
             // 
-            this.TimerDisplayDetector.Interval = 30000;
-            this.TimerDisplayDetector.Tick += new System.EventHandler(this.TimerDisplayDetector_Tick);
+            TimerDisplayDetector.Interval = 30000;
+            TimerDisplayDetector.Tick += TimerDisplayDetector_Tick;
             // 
             // ButtonMinimize
             // 
-            this.ButtonMinimize.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ButtonMinimize.Location = new System.Drawing.Point(15, 15);
-            this.ButtonMinimize.Name = "ButtonMinimize";
-            this.ButtonMinimize.Size = new System.Drawing.Size(190, 87);
-            this.ButtonMinimize.TabIndex = 0;
-            this.ButtonMinimize.Text = "Minimize";
-            this.ButtonMinimize.UseVisualStyleBackColor = true;
-            this.ButtonMinimize.Click += new System.EventHandler(this.ButtonMinimize_Click);
+            ButtonMinimize.Dock = System.Windows.Forms.DockStyle.Fill;
+            ButtonMinimize.Location = new System.Drawing.Point(15, 15);
+            ButtonMinimize.Name = "ButtonMinimize";
+            ButtonMinimize.Size = new System.Drawing.Size(190, 127);
+            ButtonMinimize.TabIndex = 0;
+            ButtonMinimize.Text = "Minimize";
+            ButtonMinimize.UseVisualStyleBackColor = true;
+            ButtonMinimize.Click += ButtonMinimize_Click;
             // 
             // CheckBoxOnlyInRDP
             // 
-            this.CheckBoxOnlyInRDP.AutoSize = true;
-            this.CheckBoxOnlyInRDP.Checked = true;
-            this.CheckBoxOnlyInRDP.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.CheckBoxOnlyInRDP.Dock = System.Windows.Forms.DockStyle.Top;
-            this.CheckBoxOnlyInRDP.Location = new System.Drawing.Point(2, 2);
-            this.CheckBoxOnlyInRDP.Margin = new System.Windows.Forms.Padding(10);
-            this.CheckBoxOnlyInRDP.Name = "CheckBoxOnlyInRDP";
-            this.CheckBoxOnlyInRDP.Padding = new System.Windows.Forms.Padding(8);
-            this.CheckBoxOnlyInRDP.Size = new System.Drawing.Size(170, 37);
-            this.CheckBoxOnlyInRDP.TabIndex = 1;
-            this.CheckBoxOnlyInRDP.Text = "Only in RDP Session";
-            this.CheckBoxOnlyInRDP.UseVisualStyleBackColor = true;
-            this.CheckBoxOnlyInRDP.CheckedChanged += new System.EventHandler(this.CheckBoxOnlyInRDP_CheckedChanged);
+            CheckBoxOnlyInRDP.AutoSize = true;
+            CheckBoxOnlyInRDP.Checked = true;
+            CheckBoxOnlyInRDP.CheckState = System.Windows.Forms.CheckState.Checked;
+            CheckBoxOnlyInRDP.Dock = System.Windows.Forms.DockStyle.Top;
+            CheckBoxOnlyInRDP.Location = new System.Drawing.Point(2, 39);
+            CheckBoxOnlyInRDP.Margin = new System.Windows.Forms.Padding(10);
+            CheckBoxOnlyInRDP.Name = "CheckBoxOnlyInRDP";
+            CheckBoxOnlyInRDP.Padding = new System.Windows.Forms.Padding(8);
+            CheckBoxOnlyInRDP.Size = new System.Drawing.Size(164, 37);
+            CheckBoxOnlyInRDP.TabIndex = 1;
+            CheckBoxOnlyInRDP.Text = "Only in RDP Session";
+            CheckBoxOnlyInRDP.UseVisualStyleBackColor = true;
+            CheckBoxOnlyInRDP.CheckedChanged += CheckBoxOnlyInRDP_CheckedChanged;
             // 
             // CheckBoxWakeScreen
             // 
-            this.CheckBoxWakeScreen.AutoSize = true;
-            this.CheckBoxWakeScreen.Dock = System.Windows.Forms.DockStyle.Top;
-            this.CheckBoxWakeScreen.Location = new System.Drawing.Point(2, 39);
-            this.CheckBoxWakeScreen.Margin = new System.Windows.Forms.Padding(10);
-            this.CheckBoxWakeScreen.Name = "CheckBoxWakeScreen";
-            this.CheckBoxWakeScreen.Padding = new System.Windows.Forms.Padding(8);
-            this.CheckBoxWakeScreen.Size = new System.Drawing.Size(170, 37);
-            this.CheckBoxWakeScreen.TabIndex = 2;
-            this.CheckBoxWakeScreen.Text = "Keep Screen Light";
-            this.CheckBoxWakeScreen.UseVisualStyleBackColor = true;
-            this.CheckBoxWakeScreen.CheckedChanged += new System.EventHandler(this.CheckBoxWakeScreen_CheckedChanged);
+            CheckBoxWakeScreen.AutoSize = true;
+            CheckBoxWakeScreen.Dock = System.Windows.Forms.DockStyle.Top;
+            CheckBoxWakeScreen.Location = new System.Drawing.Point(2, 76);
+            CheckBoxWakeScreen.Margin = new System.Windows.Forms.Padding(10);
+            CheckBoxWakeScreen.Name = "CheckBoxWakeScreen";
+            CheckBoxWakeScreen.Padding = new System.Windows.Forms.Padding(8);
+            CheckBoxWakeScreen.Size = new System.Drawing.Size(164, 37);
+            CheckBoxWakeScreen.TabIndex = 2;
+            CheckBoxWakeScreen.Text = "Keep Screen Light";
+            CheckBoxWakeScreen.UseVisualStyleBackColor = true;
+            CheckBoxWakeScreen.CheckedChanged += CheckBoxWakeScreen_CheckedChanged;
             // 
             // SplitMain
             // 
-            this.SplitMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.SplitMain.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
-            this.SplitMain.IsSplitterFixed = true;
-            this.SplitMain.Location = new System.Drawing.Point(0, 0);
-            this.SplitMain.Name = "SplitMain";
+            SplitMain.Dock = System.Windows.Forms.DockStyle.Fill;
+            SplitMain.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
+            SplitMain.IsSplitterFixed = true;
+            SplitMain.Location = new System.Drawing.Point(0, 0);
+            SplitMain.Name = "SplitMain";
             // 
             // SplitMain.Panel1
             // 
-            this.SplitMain.Panel1.Controls.Add(this.ButtonMinimize);
-            this.SplitMain.Panel1.Padding = new System.Windows.Forms.Padding(15);
+            SplitMain.Panel1.Controls.Add(ButtonMinimize);
+            SplitMain.Panel1.Padding = new System.Windows.Forms.Padding(15);
             // 
             // SplitMain.Panel2
             // 
-            this.SplitMain.Panel2.Controls.Add(this.CheckBoxAggressive);
-            this.SplitMain.Panel2.Controls.Add(this.CheckBoxWakeScreen);
-            this.SplitMain.Panel2.Controls.Add(this.CheckBoxOnlyInRDP);
-            this.SplitMain.Panel2.Margin = new System.Windows.Forms.Padding(10);
-            this.SplitMain.Panel2.Padding = new System.Windows.Forms.Padding(2);
-            this.SplitMain.Size = new System.Drawing.Size(398, 117);
-            this.SplitMain.SplitterDistance = 220;
-            this.SplitMain.TabIndex = 3;
+            SplitMain.Panel2.Controls.Add(CheckBoxAggressive);
+            SplitMain.Panel2.Controls.Add(CheckBoxWakeScreen);
+            SplitMain.Panel2.Controls.Add(CheckBoxOnlyInRDP);
+            SplitMain.Panel2.Controls.Add(CheckBoxPowerOverlay);
+            SplitMain.Panel2.Margin = new System.Windows.Forms.Padding(10);
+            SplitMain.Panel2.Padding = new System.Windows.Forms.Padding(2);
+            SplitMain.Size = new System.Drawing.Size(392, 157);
+            SplitMain.SplitterDistance = 220;
+            SplitMain.TabIndex = 3;
             // 
             // CheckBoxAggressive
             // 
-            this.CheckBoxAggressive.AutoSize = true;
-            this.CheckBoxAggressive.Dock = System.Windows.Forms.DockStyle.Top;
-            this.CheckBoxAggressive.Location = new System.Drawing.Point(2, 76);
-            this.CheckBoxAggressive.Margin = new System.Windows.Forms.Padding(10);
-            this.CheckBoxAggressive.Name = "CheckBoxAggressive";
-            this.CheckBoxAggressive.Padding = new System.Windows.Forms.Padding(8);
-            this.CheckBoxAggressive.Size = new System.Drawing.Size(170, 37);
-            this.CheckBoxAggressive.TabIndex = 3;
-            this.CheckBoxAggressive.Text = "Aggressive";
-            this.CheckBoxAggressive.UseVisualStyleBackColor = true;
+            CheckBoxAggressive.AutoSize = true;
+            CheckBoxAggressive.Dock = System.Windows.Forms.DockStyle.Top;
+            CheckBoxAggressive.Location = new System.Drawing.Point(2, 113);
+            CheckBoxAggressive.Margin = new System.Windows.Forms.Padding(10);
+            CheckBoxAggressive.Name = "CheckBoxAggressive";
+            CheckBoxAggressive.Padding = new System.Windows.Forms.Padding(8);
+            CheckBoxAggressive.Size = new System.Drawing.Size(164, 37);
+            CheckBoxAggressive.TabIndex = 3;
+            CheckBoxAggressive.Text = "Aggressive";
+            CheckBoxAggressive.UseVisualStyleBackColor = true;
+            // 
+            // CheckBoxPowerOverlay
+            // 
+            CheckBoxPowerOverlay.AutoSize = true;
+            CheckBoxPowerOverlay.Dock = System.Windows.Forms.DockStyle.Top;
+            CheckBoxPowerOverlay.Location = new System.Drawing.Point(2, 2);
+            CheckBoxPowerOverlay.Margin = new System.Windows.Forms.Padding(10);
+            CheckBoxPowerOverlay.Name = "CheckBoxPowerOverlay";
+            CheckBoxPowerOverlay.Padding = new System.Windows.Forms.Padding(8);
+            CheckBoxPowerOverlay.Size = new System.Drawing.Size(164, 37);
+            CheckBoxPowerOverlay.TabIndex = 4;
+            CheckBoxPowerOverlay.Text = "RDP Power Saving";
+            CheckBoxPowerOverlay.UseVisualStyleBackColor = true;
+            CheckBoxPowerOverlay.CheckedChanged += CheckBoxPowerOverlay_CheckedChanged;
             // 
             // NotifyIconMain
             // 
-            this.NotifyIconMain.BalloonTipIcon = System.Windows.Forms.ToolTipIcon.Info;
-            this.NotifyIconMain.Text = "KeepDisplayOn";
-            this.NotifyIconMain.Visible = true;
-            this.NotifyIconMain.Click += new System.EventHandler(this.NotifyIconMain_Click);
+            NotifyIconMain.BalloonTipIcon = System.Windows.Forms.ToolTipIcon.Info;
+            NotifyIconMain.Text = "KeepDisplayOn";
+            NotifyIconMain.Visible = true;
+            NotifyIconMain.Click += NotifyIconMain_Click;
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
-            this.AutoValidate = System.Windows.Forms.AutoValidate.Disable;
-            this.CausesValidation = false;
-            this.ClientSize = new System.Drawing.Size(398, 117);
-            this.Controls.Add(this.SplitMain);
-            this.DoubleBuffered = true;
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.MaximizeBox = false;
-            this.Name = "MainForm";
-            this.ShowIcon = false;
-            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "KeepDisplayOn";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
-            this.Load += new System.EventHandler(this.MainForm_Load);
-            this.Resize += new System.EventHandler(this.MainForm_Resize);
-            this.SplitMain.Panel1.ResumeLayout(false);
-            this.SplitMain.Panel2.ResumeLayout(false);
-            this.SplitMain.Panel2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.SplitMain)).EndInit();
-            this.SplitMain.ResumeLayout(false);
-            this.ResumeLayout(false);
+            AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            AutoValidate = System.Windows.Forms.AutoValidate.Disable;
+            CausesValidation = false;
+            ClientSize = new System.Drawing.Size(392, 157);
+            Controls.Add(SplitMain);
+            DoubleBuffered = true;
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
+            Name = "MainForm";
+            ShowIcon = false;
+            SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
+            StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            Text = "KeepDisplayOn";
+            FormClosing += MainForm_FormClosing;
+            Load += MainForm_Load;
+            Resize += MainForm_Resize;
+            SplitMain.Panel1.ResumeLayout(false);
+            SplitMain.Panel2.ResumeLayout(false);
+            SplitMain.Panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)SplitMain).EndInit();
+            SplitMain.ResumeLayout(false);
+            ResumeLayout(false);
 
         }
 
@@ -177,6 +192,7 @@ namespace KeepDisplayOn
         private System.Windows.Forms.SplitContainer SplitMain;
         private System.Windows.Forms.NotifyIcon NotifyIconMain;
         private System.Windows.Forms.CheckBox CheckBoxAggressive;
+        private System.Windows.Forms.CheckBox CheckBoxPowerOverlay;
     }
 }
 

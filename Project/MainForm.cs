@@ -2,6 +2,8 @@
 using System.Threading;
 using System.Windows.Forms;
 
+using KeepDisplayOn.WIN32APIs;
+
 namespace KeepDisplayOn
 {
     public partial class MainForm : Form
@@ -13,6 +15,8 @@ namespace KeepDisplayOn
         public DateTime m_IsDisplayHoldingLastChecked = DateTime.MinValue;
 
         protected KeepDisplayOnCore _core = new KeepDisplayOnCore();
+
+        private bool m_IsInRDP = false;
 
         public MainForm()
         {
@@ -32,25 +36,42 @@ namespace KeepDisplayOn
                 Application.Exit();
                 return;
             }
+
+            Initialize();
+            SetInactive();
+
+            if (CheckBoxOnlyInRDP.Checked)
+            {
+                CheckBoxOnlyInRDP_CheckedChanged(sender, e);
+            }
             else
             {
-                SetInactive();
-                if (CheckBoxOnlyInRDP.Checked)
-                {
-                    CheckBoxOnlyInRDP_CheckedChanged(sender, e);
-                }
-                else
-                {
-                    StartDisplayHolding();
-                }
-                System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.BelowNormal;
+                StartDisplayHolding();
             }
+
+            System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.BelowNormal;
+        }
+
+        public void SetRDPState(bool isInRDP)
+        {
+            m_IsInRDP = isInRDP;
         }
 
         public void SetActive()
         {
             m_IsDisplayHoldingActive = true;
-            var stateMessage = "KeepDisplayOn - [Active]";
+            UpdateStateMessage();
+        }
+
+        public void SetInactive()
+        {
+            m_IsDisplayHoldingActive = false;
+            UpdateStateMessage();
+        }
+
+        private void UpdateStateMessage()
+        {
+            var stateMessage = $"KeepDisplayOn - [{(m_IsDisplayHoldingActive ? "Active" : "Inactive")}]{(m_IsInRDP ? " (RDP)" : "")}";
             this.Text = stateMessage;
             this.NotifyIconMain.Text = stateMessage;
         }
@@ -78,14 +99,6 @@ namespace KeepDisplayOn
             }
         }
 
-        public void SetInactive()
-        {
-            m_IsDisplayHoldingActive = false;
-            var stateMessage = "KeepDisplayOn - [Inactive]";
-            this.Text = stateMessage;
-            this.NotifyIconMain.Text = stateMessage;
-        }
-
         public void StopDisplayHolding()
         {
             lock (LockObject)
@@ -105,7 +118,7 @@ namespace KeepDisplayOn
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            StopDisplayHolding();
+            HandleExitingRDP();
             SingleInstanceMutex?.ReleaseMutex();
         }
 
@@ -121,27 +134,87 @@ namespace KeepDisplayOn
             Application.DoEvents();
         }
 
-        private void TimerDisplayDetector_Tick(object sender, EventArgs e)
+        private void HandleEnteringRDP()
+        {
+            if (_core.m_SavedPowerOverlay != null)
+                return;
+
+            if (CheckBoxPowerOverlay.Checked)
+            {
+                try
+                {
+                    _core.EnableBatterySavingOverlay();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to handle power overlay when entering RDP: {ex.Message}");
+                }
+            }
+        }
+
+        private void HandleInRDP()
         {
             try
             {
-                _core.RefreshRemoteSessionStatus();
-                var isInRDP = _core.IsInRemoteSession();
-                if (isInRDP != m_IsDisplayHoldingActive)
-                {
-                    if (isInRDP)
-                    {
-                        StartDisplayHolding();
-                    }
-                    else
-                    {
-                        StopDisplayHolding();
-                    }
-                }
+                StartDisplayHolding();
             }
             catch (Exception ex)
             {
-                // Left blank for debug.
+                Console.WriteLine($"Failed to start display holding in RDP: {ex.Message}");
+            }
+        }
+
+        private void HandleExitingRDP()
+        {
+            try
+            {
+                StopDisplayHolding();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to stop display holding when exiting RDP: {ex.Message}");
+            }
+
+            if (CheckBoxPowerOverlay.Checked)
+            {
+                try
+                {
+                    _core.RestoreSavedBatteryOverlay();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to restore power overlay when exiting RDP: {ex.Message}");
+                }
+            }
+        }
+
+        private void TimerDisplayDetector_Tick(object sender, EventArgs e)
+        {
+            bool isInRDP = false;
+
+            try
+            {
+                _core.RefreshRemoteSessionStatus();
+                isInRDP = _core.IsInRemoteSession();
+                SetRDPState(isInRDP);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to detect RDP status: {ex.Message}");
+                return;
+            }
+
+            // State transition handling
+            if (isInRDP && !m_IsDisplayHoldingActive)
+            {
+                // Entering RDP
+                HandleEnteringRDP();
+                HandleInRDP();
+            }
+            else if (!isInRDP && m_IsDisplayHoldingActive)
+            {
+                // Exiting RDP
+                HandleExitingRDP();
             }
         }
 
@@ -185,6 +258,28 @@ namespace KeepDisplayOn
             this.WindowState = FormWindowState.Normal;
             Application.DoEvents();
             this.Activate();
+        }
+
+        public void Initialize()
+        {
+            _core.Initialize();
+            _core.RefreshRemoteSessionStatus();
+        }
+
+        private void CheckBoxPowerOverlay_CheckedChanged(object sender, EventArgs e)
+        {
+            if (CheckBoxPowerOverlay.Checked)
+            {
+                if (TimerDisplayDetector.Enabled)
+                {
+                    _core.EnableBatterySavingOverlay();
+                }
+            }
+            else
+            {
+                _core.RestoreSavedBatteryOverlay();
+            }
+            ButtonMinimize.Focus();
         }
     }
 }

@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
+using static System.Formats.Asn1.AsnWriter;
+
 namespace KeepDisplayOn
 {
     public class KeepDisplayOnCore
@@ -41,6 +43,8 @@ namespace KeepDisplayOn
 
         protected bool m_LastRemoteSessionIndicator = false;
         public DateTime m_LastRemoteSessionIndicatorRefreshedAt = DateTime.MinValue;
+
+        public Guid? m_SavedPowerOverlay = null;
 
         const int MaxKeepAliveInternal = 60000;
         const int MinKeepAliveInternal = 10000;
@@ -236,6 +240,28 @@ namespace KeepDisplayOn
                     //SendKeys.Send("{NUMLOCK}{NUMLOCK}");
                 }
             }
+        }
+
+        public void EnableBatterySavingOverlay()
+        {
+            var currentOverlays = PowerOverlay.GetActiveOverlays();
+            m_SavedPowerOverlay = currentOverlays.acOverlay;
+            PowerOverlay.SetActiveOverlay(PowerOverlay.LowPowerOverlay);
+        }
+
+        public void RestoreSavedBatteryOverlay()
+        {
+            if (m_SavedPowerOverlay is null)
+            {
+                return;
+            }
+
+            var currentOverlays = PowerOverlay.GetActiveOverlays();
+            if (currentOverlays.acOverlay == PowerOverlay.LowPowerOverlay)
+            {
+                PowerOverlay.SetActiveOverlay(m_SavedPowerOverlay.Value);
+            }
+            m_SavedPowerOverlay = null;
         }
     }
 }
